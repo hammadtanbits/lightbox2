@@ -206,7 +206,31 @@
     });
 
     this.$lightbox.find('.lb-download').on('click', function (e) {
-      window.open(e.target.href);
+      var link = e.target.href;
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        var originalImageData = ctx.canvas.toDataURL();
+        var lnk = document.createElement('a'), e;  // create an "off-screen" anchor tag
+        lnk.download = link.split('?')[0].replace(/^.*[\\\/]/, ''); // the key here is to set the download attribute of the a tag
+        lnk.href = originalImageData;
+        if (document.createEvent) { // create a "fake" click-event to trigger the download
+          e = document.createEvent('MouseEvents');
+          e.initMouseEvent('click', true, true, window,
+            0, 0, 0, 0, 0, false, false, false,
+            false, 0, null);
+
+          lnk.dispatchEvent(e);
+        } else if (lnk.fireEvent) {
+          lnk.fireEvent('onclick');
+        }
+      };
+      img.src = link;
     });
   };
 
